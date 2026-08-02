@@ -34,6 +34,8 @@ for relative in ("index.html", "desktop.js", "pkg/focus_flow.js", "pkg/focus_flo
 index = (dist / "index.html").read_text()
 assert "https://" not in index and "http://" not in index, "desktop HTML must be self-contained"
 assert "4317" not in index, "desktop HTML must not reference the development port"
+desktop_js = (dist / "desktop.js").read_text()
+assert 'init("/pkg/focus_flow.wasm")' in desktop_js, "desktop entrypoint must load the emitted WASM filename"
 print("Desktop bundle structure is valid")
 PY
 
