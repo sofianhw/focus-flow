@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible, non-sensitive problem in Focus Flow
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets or vulnerability details. For security concerns, read [SECURITY.md](../../SECURITY.md) and do not post sensitive information publicly.
+  - type: input
+    id: version
+    attributes:
+      label: App version or commit
+      description: Which release, build, or commit shows the problem?
+      placeholder: e.g. v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: List the smallest sequence that reliably reproduces the problem.
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add non-sensitive logs, screenshots, or configuration details.
+    validations:
+      required: false

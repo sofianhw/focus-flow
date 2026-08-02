@@ -1,0 +1,3 @@
+# Draft configuration: add only maintainer-approved contact links before publication.
+blank_issues_enabled: false
+contact_links: []

@@ -1,10 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["app", "server"]
+members = ["app", "server", "crates/focus-flow-core"]
 
 [workspace.dependencies]
 leptos_ui = "0.3"
 icons = { version = "0.18", features = ["leptos"] }
+js-sys = "0.3"
+send_wrapper = "0.6"
 
 
 anyhow = "1"
@@ -32,15 +34,15 @@ web-sys = { version = "0.3", features = ["MediaQueryList", "Storage", "Window"] 
 
 
 [[workspace.metadata.leptos]]
-name = "start_tauri"
+name = "focus_flow"
 bin-package = "server"
 lib-package = "app"
 site-root = "target/site"
 assets-dir = "public"
 site-pkg-dir = "pkg"
 tailwind-input-file = "style/tailwind.css"
-site-addr = "0.0.0.0:3000"
-reload-port = 3001
+site-addr = "127.0.0.1:4317"
+reload-port = 4318
 browserquery = "defaults"
 bin-features = []
 bin-default-features = false

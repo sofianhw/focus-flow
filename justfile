@@ -1,4 +1,4 @@
-# Cross-platform justfile for start-tauri
+# Cross-platform justfile for Focus Flow
 # Install just: cargo install just
 
 # Default recipe - show available commands
@@ -9,10 +9,62 @@ default:
 # SETUP
 # ============================================================================
 
-# Ignore local IP changes in tauri config files
 setup:
-    git update-index --assume-unchanged src-tauri/tauri.ios.conf.json src-tauri/tauri.android.conf.json
-    @echo "✅ Git will now ignore local IP changes in tauri config files"
+    @echo "No repository setup changes are required. Install the pinned tools from PREREQUISITES.md."
+
+# Canonical local/CI quality gate. Keep this list single-sourced.
+check:
+    cargo fmt --all -- --check
+    cargo clippy --workspace --all-targets -- -D warnings
+    cargo test --workspace
+    cargo check -p app --no-default-features --features csr
+    cargo check -p server --no-default-features
+    cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+    pnpm build:desktop
+    just check-desktop-bundle
+    just check-port-resolution
+
+# Network-dependent advisory scans are kept separate from the fast PR gate.
+audit:
+    pnpm audit --audit-level high
+    just check-cargo-audit
+
+[unix]
+check-cargo-audit:
+    #!/usr/bin/env sh
+    set -eu
+    if ! command -v cargo-audit >/dev/null 2>&1; then
+        echo "cargo-audit is not installed; run: cargo install cargo-audit --locked" >&2
+        exit 1
+    fi
+    cargo audit
+
+[windows]
+check-cargo-audit:
+    #!powershell
+    if (-not (Get-Command cargo-audit -ErrorAction SilentlyContinue)) {
+        Write-Error 'cargo-audit is not installed; run: cargo install cargo-audit --locked'
+        exit 1
+    }
+    cargo audit
+
+# Regression test for the desktop-port contract. The port is supplied to both
+# Leptos and Tauri through environment/config overrides; tracked JSON is never edited.
+check-port-resolution:
+    ./scripts/check-port-resolution.sh
+
+# Structural smoke gate for the packaged offline desktop runtime.
+check-desktop-bundle:
+    ./scripts/check-desktop-bundle.sh
+
+[windows]
+check-port-resolution:
+    #!powershell
+    $content = Get-Content justfile -Raw
+    if ($content -notmatch 'LEPTOS_SITE_ADDR="127\.0\.0\.1:\{\{port\}\}"') { throw 'Leptos port contract missing' }
+    if ($content -notmatch 'devUrl.*127\.0\.0\.1:\{\{port\}\}') { throw 'Tauri devUrl port contract missing' }
+    if ($content -match 'sed -i.*tauri\.conf\.json') { throw 'Tracked Tauri config rewrite detected' }
+    Write-Host 'desktop port contract OK'
 
 # ============================================================================
 # DESKTOP
@@ -20,32 +72,30 @@ setup:
 
 # Run Tauri desktop dev with custom port (reload_port = port + 1)
 [macos]
-run_desktop port="3000":
+run_desktop port="4317":
     #!/usr/bin/env bash
     set -e
     reload_port=$(({{port}} + 1))
-    sed -i '' "s|http://localhost:[0-9]*|http://localhost:{{port}}|g" src-tauri/tauri.conf.json
     echo "Running on port {{port}} (reload: $reload_port)"
-    LEPTOS_SITE_ADDR="127.0.0.1:{{port}}" LEPTOS_RELOAD_PORT="$reload_port" cargo tauri dev
+    PORT="{{port}}" LEPTOS_SITE_ADDR="127.0.0.1:{{port}}" LEPTOS_RELOAD_PORT="$reload_port" cargo tauri dev --config "{\"build\":{\"devUrl\":\"http://127.0.0.1:{{port}}\"}}"
 
 [linux]
-run_desktop port="3000":
+run_desktop port="4317":
     #!/usr/bin/env bash
     set -e
     reload_port=$(({{port}} + 1))
-    sed -i "s|http://localhost:[0-9]*|http://localhost:{{port}}|g" src-tauri/tauri.conf.json
     echo "Running on port {{port}} (reload: $reload_port)"
-    LEPTOS_SITE_ADDR="127.0.0.1:{{port}}" LEPTOS_RELOAD_PORT="$reload_port" cargo tauri dev
+    PORT="{{port}}" LEPTOS_SITE_ADDR="127.0.0.1:{{port}}" LEPTOS_RELOAD_PORT="$reload_port" cargo tauri dev --config "{\"build\":{\"devUrl\":\"http://127.0.0.1:{{port}}\"}}"
 
 [windows]
-run_desktop port="3000":
+run_desktop port="4317":
     #!powershell
     $reload_port = [int]{{port}} + 1
-    (Get-Content src-tauri/tauri.conf.json) -replace 'http://localhost:[0-9]+', "http://localhost:{{port}}" | Set-Content src-tauri/tauri.conf.json
     Write-Host "Running on port {{port}} (reload: $reload_port)"
     $env:LEPTOS_SITE_ADDR = "127.0.0.1:{{port}}"
     $env:LEPTOS_RELOAD_PORT = "$reload_port"
-    cargo tauri dev
+    $env:PORT = "{{port}}"
+    cargo tauri dev --config ('{"build":{"devUrl":"http://127.0.0.1:' + {{port}} + '"}}')
 
 # ============================================================================
 # MOBILE - iOS (macOS only)

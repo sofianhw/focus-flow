@@ -1,4 +1,4 @@
-// Tauri setup for desktop wrapper around Leptos SSR application
+// Tauri setup for the offline, embedded CSR desktop application.
 
 // Mobile entry point - required for Android/iOS
 #[cfg(mobile)]
@@ -9,7 +9,6 @@ fn mobile_main() {
 
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

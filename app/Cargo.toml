@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 leptos_ui.workspace = true
 icons.workspace = true
+focus-flow-core = { path = "../crates/focus-flow-core" }
 
 anyhow.workspace = true
 console_error_panic_hook.workspace = true
@@ -28,6 +29,8 @@ strum_macros.workspace = true
 thiserror.workspace = true
 web-sys.workspace = true
 wasm-bindgen = { workspace = true }
+js-sys.workspace = true
+send_wrapper.workspace = true
 
 
 

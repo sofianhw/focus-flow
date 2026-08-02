@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest a focused improvement to Focus Flow
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: user_value
+    attributes:
+      label: User value
+      description: What user problem or outcome would this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful version of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches or workarounds did you consider?
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Trade-offs and scope
+      description: Note platform, privacy, architecture, or maintenance implications.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a matching request.
+          required: true
+        - label: This request does not include private or security-sensitive information.
+          required: true

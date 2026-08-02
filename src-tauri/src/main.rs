@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    cross_platform_todo_app::run()
+    focus_flow::run()
 }

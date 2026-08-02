@@ -1,7 +1,8 @@
 use leptos::prelude::*;
 use leptos_ui::variants;
 
-// TODO 💪 Loading state (demo_use_timeout_fn.rs and demo_button.rs)
+// Keep loading behavior at the feature boundary so buttons remain reusable
+// presentation primitives.
 
 variants! {
     Button {

@@ -1,24 +1,34 @@
+use focus_flow_core::WorkspaceSnapshot;
 use leptos::prelude::*;
 use leptos_meta::{Html, Title, provide_meta_context};
-use leptos_router::StaticSegment;
-use leptos_router::components::{Route, Router, Routes};
+use leptos_router::components::Router;
 
+use crate::adapters::controller::WorkspaceController;
 use crate::components::hooks::use_theme_mode::ThemeMode;
-use crate::components::layout::app_bottom_nav::AppBottomNav;
 use crate::components::layout::app_wrapper::AppWrapper;
 use crate::components::layout::header::Header;
-use crate::domain::home::{HomePage, HomeRoutes};
-use crate::domain::settings::{SettingsPage, SettingsRoutes};
-use crate::domain::test::{TestPage, TestRoutes};
+use crate::components::layout::sidebar::Sidebar;
+use crate::domain::home::HomePage;
+use crate::domain::settings::SettingsPage;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum AppView {
+    Home,
+    Settings,
+}
 
 #[component]
 pub fn App() -> impl IntoView {
     let theme_mode = ThemeMode::init();
+    let current_view = RwSignal::new(AppView::Home);
+    let sidebar_collapsed = RwSignal::new(false);
+    let controller = WorkspaceController::new(WorkspaceSnapshot::default());
+    let workspace = RwSignal::new(controller.snapshot());
 
     provide_meta_context();
 
     view! {
-        <Title text="Rust/UI Starters — Cross-Platform Apps" />
+        <Title text="Focus Flow" />
 
         <Html {..} class=move || if theme_mode.is_dark() { "dark" } else { "" } />
 
@@ -26,25 +36,20 @@ pub fn App() -> impl IntoView {
             <AppWrapper>
                 <Header />
 
-                <main class="overflow-y-auto flex-1 overflow-x-clip">
-                    <Routes fallback=|| view! { <NotFoundPage /> }>
-                        <Route path=StaticSegment(HomeRoutes::base_url()) view=HomePage />
-                        <Route path=StaticSegment(TestRoutes::base_segment()) view=TestPage />
-                        <Route path=StaticSegment(SettingsRoutes::base_segment()) view=SettingsPage />
-                    </Routes>
-                </main>
+                <div class="flex min-h-0 flex-1">
+                    <Sidebar current_view=current_view collapsed=sidebar_collapsed />
+                    <main class="min-w-0 flex-1 overflow-y-auto overflow-x-clip">
+                        {move || match current_view.get() {
+                            AppView::Home => view! {
+                                <HomePage controller=controller.clone() workspace=workspace />
+                            }.into_any(),
+                            AppView::Settings => view! {
+                                <SettingsPage controller=controller.clone() workspace=workspace />
+                            }.into_any(),
+                        }}
+                    </main>
+                </div>
             </AppWrapper>
-
-            <AppBottomNav />
         </Router>
     }
-}
-
-/* ========================================================== */
-/*                     ✨ FUNCTIONS ✨                        */
-/* ========================================================== */
-
-#[component]
-fn NotFoundPage() -> impl IntoView {
-    view! { <p>"Not Found."</p> }
 }

@@ -1,0 +1,4 @@
+allowBuilds:
+  '@parcel/watcher': true
+overrides:
+  picomatch: 2.3.2
